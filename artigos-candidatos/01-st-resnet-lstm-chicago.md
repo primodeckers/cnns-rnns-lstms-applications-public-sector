@@ -27,7 +27,7 @@ Prever *hotspots* de furto urbano para que a polícia aloque recursos de forma e
 ## Resultados (métricas)
 - RMSE 0,2215 a 500 m (melhora de 6,34% sobre baseline ST-RN)
 - RMSE 0,4762 a 1000 m (4,76%) e 0,9785 a 2000 m (14,15%)
-- *Mean Hit Rate*: 62,32% (5%), 79,94% (10%), 88,09% (20%)
+- *Mean Hit Rate*: 62,32% (5%), 79,94% (10%), 88,74% (20%)
 - Índice PAI utilizado
 - Baselines comparados (ST-RN etc.) ✔
 
