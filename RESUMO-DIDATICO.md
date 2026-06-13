@@ -9,7 +9,7 @@
 
 Os autores ensinaram um modelo de deep learning a olhar o **histórico de furtos de Chicago** e prever **onde** (em quais quadras do mapa) e **quando** (em quais dias) novos furtos têm mais chance de acontecer — desenhando "mapas de calor" de risco diários para a polícia se antecipar ao crime em vez de só reagir a ele.
 
-A frase-chave do artigo: o modelo atinge **taxa média de acerto acima de 88% na resolução fina de 500 m**, justamente a escala em que os modelos anteriores falhavam — e a mais útil para o policiamento operacional (planejar a ronda da viatura, não a política do estado inteiro).
+A frase-chave do artigo: o modelo atinge **taxa média de acerto acima de 88% na resolução fina de 500 m em Chicago**, justamente a escala em que os modelos anteriores falhavam — e a mais útil para o policiamento operacional (planejar a ronda da viatura no nível do quarteirão/bairro, não a política do estado inteiro).
 
 ---
 
@@ -40,12 +40,12 @@ O artigo só faz sentido entendendo as **lacunas** que ele ataca. A evolução d
 
 | Lacuna                                | Exemplo na literatura                                                                                                                        |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Grade espacial grossa demais**      | Wang et al. usaram células de **17,8 km** em Los Angeles — não diz nada sobre o nível do bairro.                                             |
+| **Grade espacial grossa demais**      | Wang et al. usaram células de **17,8 km** em Los Angeles (outro estudo, outra cidade) — não diz nada sobre o nível do bairro de Chicago.     |
 | **Sem modelagem sequencial do tempo** | O ST-ResNet original trata o tempo como "canais paralelos" (fatias empilhadas), perdendo a **ordem** dos dias.                               |
 | **Só variáveis externas estáticas**   | Clima e feriado valem para a cidade inteira no dia — não variam de lugar para lugar. Faltava uma variável **dinâmica no espaço E no tempo**. |
 
 
-Além disso, havia um achado incômodo: estudos multi-escala (Zhang et al., Jing et al.) mostravam que os modelos rendem melhor em grades **médias** (1000–2400 m) e **pioram** nas finas (500 m), porque em células pequenas os dados ficam **esparsos** (muitas células com zero crime). O artigo de Chicago ataca exatamente isso: ser o primeiro a **sustentar a melhor acurácia a 500 m**.
+Além disso, havia um achado incômodo: estudos multi-escala (Zhang et al., Jing et al.) mostravam que os modelos rendem melhor em grades **médias** (1000–2400 m) e **pioram** nas finas (500 m), porque em células pequenas os dados ficam **esparsos** (muitas células com zero crime). **O artigo estudado — aplicado em Chicago — ataca exatamente isso:** ser o primeiro a **sustentar a melhor acurácia a 500 m** (nível de quarteirão/bairro), escala em que todos os estudos anteriores, inclusive o de Los Angeles, fracassavam.
 
 ---
 
@@ -137,7 +137,7 @@ O problema tem **duas dimensões ao mesmo tempo**: espaço (mapa) e tempo (sequ�
 - **Convolução** = passar um pequeno filtro (janelinha **3×3**) deslizando sobre a imagem para detectar **padrões locais** — ex.: "célula com muito crime cercada por células também perigosas". É assim que a CNN aprende a **vizinhança** espacial. O modelo usa **64 filtros de 3×3** na entrada de cada ramo.
 - **Problema:** uma CNN rasa só enxerga vizinhança próxima. Para capturar dependências **distantes** (um padrão no norte da cidade que se relaciona com o sul) é preciso empilhar muitas camadas — e redes muito profundas sofrem do **gradiente que desaparece** (vanishing gradient).
   - **Vanishing gradient em uma linha:** a rede aprende passando um "recado de correção" de trás para frente, camada por camada; a cada camada o recado é multiplicado por números menores que 1 (0,5 × 0,5 × 0,5... ≈ 0) — como num **telefone sem fio**, ele chega às primeiras camadas fraco demais e elas param de aprender. Esse mesmo vilão aparece duas vezes no artigo: nas camadas da CNN (solução: ResNet) e nos passos de tempo da RNN (solução: LSTM).
-- **Solução: conexões residuais (o "Res" de ResNet).** Cada bloco ganha um "atalho" que deixa a informação **pular camadas**. Com isso dá para empilhar profundidade sem perder o sinal — e a rede passa a enxergar padrões próximos **e** distantes.
+- **Solução: conexões residuais (o "Res" de ResNet).** Imagine que você manda uma mensagem por correio, mas também guarda uma cópia na gaveta. Se a mensagem se perder no caminho, você ainda tem a cópia original para consultar. É exatamente isso: além de passar pela camada, a informação tem um **atalho direto** que a entrega ao bloco seguinte sem alterar. Assim, mesmo que uma camada "distorça" o sinal, o atalho garante que o original chegue intacto. Com isso dá para empilhar muitas camadas sem perder o sinal — e a rede passa a enxergar padrões próximos **e** distantes.
 - **ST-ResNet** (*Spatio-Temporal Residual Network*, de Zhang et al. 2017) organiza essa CNN residual em **três ramos paralelos**, cada um olhando o passado numa escala:
   - **Closeness (proximidade):** os últimos dias — "ontem estava quente, amanhã tende a continuar";
   - **Period (período):** o padrão **semanal** — "toda sexta esse lugar esquenta";
